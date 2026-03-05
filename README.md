@@ -68,7 +68,7 @@ When uploaded, this diagram will appear here.
 | Amazon S3 | Stores static website assets |
 | Amazon CloudFront | Global CDN used to deliver content |
 | AWS WAF | Protects the application from common web threats |
-| IAM / Bucket Policies | Enforces least-privilege access between services |
+| Bucket Policies | Enforces least-privilege access between services |
 
 ## Security Controls
 
@@ -110,12 +110,44 @@ The architecture was validated through several access tests.
 
 | Test | Result |
 |----|----|
-Direct access to S3 object | Access Denied |
+Direct access to S3 object | Not Exposed |
 Access through CloudFront | Website loads successfully |
 Malicious XSS request | Blocked by WAF (403) |
-Request to non-existent resource | 404 returned |
+
 
 These checks confirm that the origin storage remains private while the website remains accessible through CloudFront.
+
+
+## Implementation Evidence
+
+
+### Website Files Uploaded
+
+![Files Uploaded](screenshots/files-uploaded-to-s3.png)
+
+
+### Origin Access Control
+
+![Origin Access Control](screenshots/origin-access-control.png)
+
+
+### S3 Bucket Policy
+
+![S3 Bucket Policy](screenshots/s3-bucket-policy.png)
+
+
+### AWS WAF Configuration
+
+![WAF Rules](screenshots/waf-rules.png)
+
+
+![WAF Rules](screenshots/waf-implemented.png)
+
+
+### Website Served Through CloudFront
+
+![Website Live](screenshots/website-live-cloudfront.png)
+
 
 ## WAF Test Evidence
 
@@ -129,78 +161,14 @@ https://d13oaj4kzmx0lp.cloudfront.net/?search=<script>alert(1)</script>
 
 The request triggered the WAF managed rule set and resulted in a **403 Forbidden response**, confirming that the firewall blocked the malicious input before reaching the origin.
 
-Screenshot when uploaded:
 
 ![WAF Block Test](screenshots/waf-test-403-block.png)
 
-### 404 Test Validation
 
-A request was also made to a non-existent resource to confirm CloudFront origin behavior.
+### XSS WAF Test
+![WAF Block Test](screenshots/WAF-XSS-test.png)
 
-Example request:
 
-```
-https://d13oaj4kzmx0lp.cloudfront.net/invalid-page
-```
-
-CloudFront correctly returned a **404 response**, demonstrating proper error handling from the origin.
-
-Screenshot when uploaded:
-
-![404 Response](screenshots/cloudfront-404-test.png)
-
-## Implementation Evidence
-
-### S3 Bucket Configuration
-
-![S3 Bucket](screenshots/s3-bucket-created.png)
-
-### Website Files Uploaded
-
-![Files Uploaded](screenshots/files-uploaded-to-s3.png)
-
-### CloudFront Distribution
-
-![CloudFront Distribution](screenshots/cloudfront-distribution-settings.png)
-
-### Origin Access Control
-
-![Origin Access Control](screenshots/origin-access-control.png)
-
-### S3 Bucket Policy
-
-![S3 Bucket Policy](screenshots/s3-bucket-policy.png)
-
-### AWS WAF Configuration
-
-![WAF Rules](screenshots/waf-rules.png)
-
-### Website Served Through CloudFront
-
-![Website Live](screenshots/website-live-cloudfront.png)
-
-## Repository Structure
-
-```
-secure-edge-static-website-aws/
-│
-├── website-files/
-│   └── index.html
-│
-├── screenshots/
-│   ├── architecture-diagram.png
-│   ├── s3-bucket-created.png
-│   ├── files-uploaded-to-s3.png
-│   ├── cloudfront-distribution-settings.png
-│   ├── origin-access-control.png
-│   ├── s3-bucket-policy.png
-│   ├── waf-rules.png
-│   ├── waf-test-403-block.png
-│   ├── cloudfront-404-test.png
-│   └── website-live-cloudfront.png
-│
-└── README.md
-```
 
 ## Design Insights
 
